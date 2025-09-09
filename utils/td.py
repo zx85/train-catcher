@@ -67,11 +67,11 @@ def parse_td_frame(parsed_body):
             uk_datetime = TIMEZONE_LONDON.fromutc(utc_datetime)
             td_entry = {
                 "timestamp": uk_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                "type": message_type,
                 "area_id": message.get("area_id", ""),
                 "description": message.get("descr", ""),
-                "from_berth": message.get("from", ""),
-                "to_berth": message.get("to", ""),
+                "from": message.get("from", ""),
+                "to": message.get("to", ""),
             }
             td_data.append(td_entry)
-    print(json.dumps(td_data))
     return td_data

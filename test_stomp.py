@@ -27,12 +27,13 @@ locs = os.getenv("LOCS").split(",")
 class Listener(stomp.ConnectionListener):
     _mq: stomp.Connection
 
-    def __init__(self, mq: stomp.Connection, durable=True):
+    def __init__(self, mq: stomp.Connection, durable=False):
         self._mq = mq
         self.is_durable = durable
 
     def on_message(self, frame):
         headers, message_raw = frame.headers, frame.body
+        # print(json.dumps(headers, indent=2))
         parsed_body = json.loads(message_raw)
 
         if self.is_durable:
@@ -44,13 +45,21 @@ class Listener(stomp.ConnectionListener):
         elif "TD_" in headers["destination"]:
             if td_data := td.parse_td_frame(parsed_body):
                 for td_entry in td_data:
-                    print(json.dumps(td_entry, indent=2))
                     if (
-                        f'{td_entry.get("area_id")}{td_entry.get("from_berth")}' in locs
-                        or f'{td_entry.get("area_id")}{td_entry.get("from_berth")}'
-                        in locs
+                        f'{td_entry.get("area_id")}{td_entry.get("from")}' in locs
+                        or f'{td_entry.get("area_id")}{td_entry.get("to")}' in locs
+                        # or td_entry.get("description") in ("2A48", "4L14", "2W30")
                     ):
-                        print("FOUND")
+                        print(
+                            "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
+                                td_entry.get("timestamp"),
+                                td_entry.get("type"),
+                                td_entry.get("area_id"),
+                                td_entry.get("description"),
+                                td_entry.get("from"),
+                                td_entry.get("to"),
+                            )
+                        )
         else:
             print("Unknown destination: ", headers["destination"])
 
@@ -82,49 +91,53 @@ if __name__ == "__main__":
 
     # https://stomp.github.io/stomp-specification-1.2.html#Heart-beating
     # We're committing to sending and accepting heartbeats every 5000ms
-    connection = stomp.Connection(
+    td_connection = stomp.Connection(
         [(hostname, port)],
         keepalive=True,
         heartbeats=(5000, 5000),
     )
-    connection.set_listener("", Listener(connection))
-
+    trust_connection = stomp.Connection(
+        [(hostname, port)],
+        keepalive=True,
+        heartbeats=(5000, 5000),
+    )
+    td_connection.set_listener("", Listener(td_connection, durable=True))
+    trust_connection.set_listener("", Listener(trust_connection))
     # Connect to feed
-    connect_headers = {
+    td_connect_headers = {
+        "username": feed_username,
+        "passcode": feed_password,
+        "wait": True,
+        "client-id": feed_username,
+    }
+    trust_connect_headers = {
         "username": feed_username,
         "passcode": feed_password,
         "wait": True,
     }
-    # if args.durable:
-    # The client-id header is part of the durable subscription - it should be unique to your account
-    connect_headers["client-id"] = feed_username
 
-    connection.connect(**connect_headers)
-
+    td_connection.connect(**td_connect_headers)
+    trust_connection.connect(**trust_connect_headers)
     # Determine topic to subscribe
     # topic = None
     # if args.trust:
     #     topic = "/topic/TRAIN_MVT_ALL_TOC"
     # elif args.td:
-    topic = "/topic/TD_ANG_SIG_AREA"
+    td_topic = "/topic/TD_ANG_SIG_AREA"
+    trust_topic = "/topic/TRAIN_MVT_ALL_TOC"
 
     # Subscription
-    subscribe_headers = {
-        "destination": topic,
+    td_subscribe_headers = {
+        "destination": td_topic,
         "id": 1,
+        "activemq.subscriptionName": feed_username + td_topic,
+        "ack": "client-individual",
     }
-    # if args.durable:
-    # Note that the subscription name should be unique both per connection and per queue
-    subscribe_headers.update(
-        {
-            "activemq.subscriptionName": feed_username + topic,
-            "ack": "client-individual",
-        }
-    )
-    # else:
-    # subscribe_headers["ack"] = "auto"
-
-    connection.subscribe(**subscribe_headers)
-
-    while connection.is_connected():
+    trust_subscribe_headers = {"destination": trust_topic, "id": 2}
+    td_connection.subscribe(**td_subscribe_headers)
+    print("Subscribed to TD topic")
+    trust_connection.subscribe(**trust_subscribe_headers)
+    print("Subscribed to TRUST topic")
+    while td_connection.is_connected() or trust_connection.is_connected():
+        print("")
         sleep(1)
