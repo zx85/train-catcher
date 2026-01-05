@@ -63,8 +63,9 @@ class Listener(stomp.ConnectionListener):
                     td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
                     td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
                     if td_from in locs_from or td_to in locs_to:
-                        if " " in td_entry.get("description"):
-                            headcode = td_entry.get("description").split(" ")[1]
+                        headcode = td_entry.get("description")
+                        print(f"Headcode: [{headcode}]")
+                        if len(headcode) == 4:
                             service = self.get_service(headcode)
                             print(service)
                         print(
