@@ -1,4 +1,12 @@
 {
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "ruff.lineLength": 88,
+  "ruff.quoteStyle": "single",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
   "MicroPython.executeButton": [
     {
       "text": "▶",

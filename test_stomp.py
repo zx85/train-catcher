@@ -1,14 +1,11 @@
-import os
-from dotenv import load_dotenv
-import time
-import json
-
 #!/usr/bin/env python3
 
 # Standard
-import argparse
 import json
 from time import sleep
+import os
+from dotenv import load_dotenv
+import requests
 
 # Third party
 import stomp
@@ -21,7 +18,8 @@ feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
 hostname = os.getenv("HOSTNAME")
 port = os.getenv("PORT")
-locs = os.getenv("LOCS").split(",")
+locs_from = [loc.split(":")[0] for loc in os.getenv("LOCS").split(",")]
+locs_to = [loc.split(":")[1] for loc in os.getenv("LOCS").split(",")]
 
 
 class Listener(stomp.ConnectionListener):
@@ -30,6 +28,17 @@ class Listener(stomp.ConnectionListener):
     def __init__(self, mq: stomp.Connection, durable=False):
         self._mq = mq
         self.is_durable = durable
+
+    def get_service(headcode):
+        print(f"checking services for {headcode}")
+        if services := requests.get(
+            f"http://localhost:3333/schedules/headcode/{headcode}"
+        ).json():
+            print(f"Found {len(services)} services for {headcode}")
+            for service in services:
+                for location in service.get("schedule_location"):
+                    if location.get("tiploc_code") == "BSTEDMS":
+                        return service
 
     def on_message(self, frame):
         headers, message_raw = frame.headers, frame.body
@@ -40,16 +49,24 @@ class Listener(stomp.ConnectionListener):
             # Acknowledging messages is important in client-individual mode
             self._mq.ack(id=headers["message-id"], subscription=headers["subscription"])
 
-        if "TRAIN_MVT_" in headers["destination"]:
-            trust.print_trust_frame(parsed_body)
-        elif "TD_" in headers["destination"]:
+        # not a whole lot of point in using this
+        # if "TRAIN_MVT_" in headers["destination"]:
+        #     if trust_data := trust.parse_trust_frame(parsed_body):
+        #         if trust_data["headcode"] in ("4M76", "2W29", "2E80"):
+        #             print(trust_data["summary"])
+        #             print(json.dumps(trust_data["body"], indent=2))
+
+        # elif "TD_" in headers["destination"]:
+        if "TD_" in headers["destination"]:
             if td_data := td.parse_td_frame(parsed_body):
                 for td_entry in td_data:
-                    if (
-                        f'{td_entry.get("area_id")}{td_entry.get("from")}' in locs
-                        or f'{td_entry.get("area_id")}{td_entry.get("to")}' in locs
-                        # or td_entry.get("description") in ("2A48", "4L14", "2W30")
-                    ):
+                    td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
+                    td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
+                    if td_from in locs_from or td_to in locs_to:
+                        if " " in td_entry.get("description"):
+                            headcode = td_entry.get("description").split(" ")[1]
+                            service = self.get_service(headcode)
+                            print(service)
                         print(
                             "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
                                 td_entry.get("timestamp"),
@@ -60,8 +77,9 @@ class Listener(stomp.ConnectionListener):
                                 td_entry.get("to"),
                             )
                         )
-        else:
-            print("Unknown destination: ", headers["destination"])
+
+        # else:
+        #     print("Unknown destination: ", headers["destination"])
 
     def on_error(self, frame):
         print("received an error {}".format(frame.body))
@@ -71,7 +89,6 @@ class Listener(stomp.ConnectionListener):
 
 
 if __name__ == "__main__":
-
     # parser = argparse.ArgumentParser()
     # parser.add_argument(
     #     "-d",
@@ -91,6 +108,9 @@ if __name__ == "__main__":
 
     # https://stomp.github.io/stomp-specification-1.2.html#Heart-beating
     # We're committing to sending and accepting heartbeats every 5000ms
+
+    # check to see if the json is there
+
     td_connection = stomp.Connection(
         [(hostname, port)],
         keepalive=True,
@@ -139,5 +159,4 @@ if __name__ == "__main__":
     trust_connection.subscribe(**trust_subscribe_headers)
     print("Subscribed to TRUST topic")
     while td_connection.is_connected() or trust_connection.is_connected():
-        print("")
         sleep(1)
