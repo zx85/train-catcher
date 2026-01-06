@@ -31,14 +31,24 @@ class Listener(stomp.ConnectionListener):
 
     def get_service(self, headcode):
         print(f"checking services for {headcode}")
+        service_details = {}
         if services := requests.get(
-            f"http://localhost:3333/schedules/headcode/{headcode}"
+            f"http://192.168.75.4:3333/schedules/headcode/{headcode}"
         ).json():
             print(f"Found {len(services)} services for {headcode}")
             for service in services:
                 for location in service.get("schedule_location"):
                     if location.get("tiploc_code") == "BSTEDMS":
-                        return service
+                        service_details = {
+                            "train_uid": service.get("CIF_train_uid"),
+                            "atoc": service.get("atoc_code_description"),
+                            "type": service.get("CIF_train_category_description"),
+                            "power": service.get("CIF_power_type_description"),
+                            "speed": service.get("CIF_speed"),
+                            "origin": service.get("origin"),
+                            "destination": service.get("destination"),
+                        }
+                        return service_details
 
     def on_message(self, frame):
         headers, message_raw = frame.headers, frame.body
@@ -67,7 +77,7 @@ class Listener(stomp.ConnectionListener):
                         print(f"Headcode: [{headcode}]")
                         if len(headcode) == 4:
                             service = self.get_service(headcode)
-                            print(service)
+                            print(json.dumps(service, indent=2))
                         print(
                             "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
                                 td_entry.get("timestamp"),
