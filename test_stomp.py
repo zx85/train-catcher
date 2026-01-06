@@ -29,7 +29,7 @@ class Listener(stomp.ConnectionListener):
         self._mq = mq
         self.is_durable = durable
 
-    def get_service(headcode):
+    def get_service(self, headcode):
         print(f"checking services for {headcode}")
         if services := requests.get(
             f"http://localhost:3333/schedules/headcode/{headcode}"
