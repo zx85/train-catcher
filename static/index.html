@@ -627,7 +627,7 @@
 
             tbody.innerHTML = trainArray.map(train => `
                 <tr>
-                    <td class="headcode">${escapeHtml(train.headcode)}</td>
+                    <td class="headcode">${getHeadcodeLink(train)}</td>
                     <td>${escapeHtml(train.location || '-')}</td>
                     <td><div class="direction">${escapeHtml(train.direction || '?')}</div></td>
                     <td><button class="type-button" onclick="showTrainDetails('${escapeHtml(train.headcode)}')">${escapeHtml(train.type || '-')}</button></td>
@@ -649,6 +649,15 @@
             document.getElementById('modalSpeed').textContent = escapeHtml(train.speed || '-');
 
             document.getElementById('detailsModal').classList.add('show');
+        }
+
+        function getHeadcodeLink(train) {
+            if (train.train_uid) {
+                const today = new Date().toISOString().split('T')[0];
+                const url = `https://www.realtimetrains.co.uk/train/${escapeHtml(train.train_uid)}/${today}/detailed`;
+                return `<a href="${url}" target="_blank" style="color: #667eea; text-decoration: none;">${escapeHtml(train.headcode)}</a>`;
+            }
+            return escapeHtml(train.headcode);
         }
 
         function closeModal() {
