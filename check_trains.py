@@ -135,12 +135,12 @@ if __name__ == "__main__":
         td_connection = stomp.Connection(
             [(hostname, port)],
             keepalive=True,
-            heartbeats=(5000, 5000),
+            heartbeats=(3300, 3300),
         )
         trust_connection = stomp.Connection(
             [(hostname, port)],
             keepalive=True,
-            heartbeats=(5000, 5000),
+            heartbeats=(3300, 3300),
         )
         td_connection.set_listener("", Listener(td_connection, durable=True))
         trust_connection.set_listener("", Listener(trust_connection))
@@ -183,6 +183,6 @@ if __name__ == "__main__":
 
     # Run the Flask app (can be interrupted with CTRL-C)
     try:
-        app.run(host="0.0.0.0", port=5000)
+        app.run(host="0.0.0.0", port=3300)
     except KeyboardInterrupt:
         print("\nShutting down gracefully...")
