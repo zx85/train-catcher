@@ -18,8 +18,8 @@ from utils import td, trust
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
-schedule_host = os.getenv("SCHEDULE_HOST",localhost)
-schedule_port = os.getenv("SCHEDULE_PORT",3333)
+schedule_host = os.getenv("SCHEDULE_HOST","localhost")
+schedule_port = os.getenv("SCHEDULE_PORT","3333")
 hostname = os.getenv("HOSTNAME")
 port = os.getenv("PORT")
 locs_from = [
