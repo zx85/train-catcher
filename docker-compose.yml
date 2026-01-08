@@ -12,8 +12,8 @@ services:
       - ./.env:/.env:ro
     restart: unless-stopped
     # For Raspberry Pi, you may want to limit resources:
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '0.5'
-    #       memory: 256M
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
