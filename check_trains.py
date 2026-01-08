@@ -186,7 +186,8 @@ if __name__ == "__main__":
     listener_thread.start()
 
     # Run the Flask app (can be interrupted with CTRL-C)
+    print("Starting Flask server at http://0.0.0.0:3300")
     try:
-        app.run(host="0.0.0.0", port=3300)
+        app.run(host="0.0.0.0", port=3300, debug=False, use_reloader=False)
     except KeyboardInterrupt:
         print("\nShutting down gracefully...")
