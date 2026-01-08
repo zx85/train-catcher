@@ -21,10 +21,8 @@ feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
 schedule_host = os.getenv("SCHEDULE_HOST", "localhost")
 schedule_port = os.getenv("SCHEDULE_PORT", "3333")
-print(f'schedule_host is: {schedule_host} - schedule_port is {schedule_port}')
 hostname = os.getenv("HOST")
 port = os.getenv("PORT")
-print(f'hostname is: {hostname} - port is {port}')
 
 locs_from = [
     (loc.split(":")[0], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
