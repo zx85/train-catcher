@@ -21,8 +21,11 @@ feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
 schedule_host = os.getenv("SCHEDULE_HOST", "localhost")
 schedule_port = os.getenv("SCHEDULE_PORT", "3333")
-hostname = os.getenv("HOSTNAME")
+print(f'schedule_host is: {schedule_host} - schedule_port is {schedule_port}')
+hostname = os.getenv("HOST")
 port = os.getenv("PORT")
+print(f'hostname is: {hostname} - port is {port}')
+
 locs_from = [
     (loc.split(":")[0], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
 ]
@@ -139,12 +142,12 @@ if __name__ == "__main__":
         td_connection = stomp.Connection(
             [(hostname, port)],
             keepalive=True,
-            heartbeats=(3300, 3300),
+            heartbeats=(5000, 5000),
         )
         trust_connection = stomp.Connection(
             [(hostname, port)],
             keepalive=True,
-            heartbeats=(3300, 3300),
+            heartbeats=(5000, 5000),
         )
         td_connection.set_listener("", Listener(td_connection, durable=True))
         trust_connection.set_listener("", Listener(trust_connection))
