@@ -18,6 +18,8 @@ from utils import td, trust
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
+schedule_host = os.getenv("SCHEDULE_HOST",localhost)
+schedule_port = os.getenv("SCHEDULE_PORT",3333)
 hostname = os.getenv("HOSTNAME")
 port = os.getenv("PORT")
 locs_from = [
@@ -48,7 +50,7 @@ class Listener(stomp.ConnectionListener):
         print(f"checking services for {headcode}")
         service_details = {}
         if services := requests.get(
-            f"http://192.168.75.4:3333/schedules/headcode/{headcode}"
+            f"http://{schedule_host}:{schedule_port}/schedules/headcode/{headcode}"
         ).json():
             print(f"Found {len(services)} services for {headcode}")
             for service in services:
