@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  train-catcher:
+    build: .
+    container_name: train-catcher
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - ./.env:/.env:ro
+    restart: unless-stopped
+    # For Raspberry Pi, you may want to limit resources:
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '0.5'
+    #       memory: 256M
