@@ -10,7 +10,8 @@ import threading
 
 # Third party
 import stomp
-from flask import Flask
+from flask import Flask, send_from_directory
+from flask_cors import CORS
 
 # Internal
 from utils import td, trust
@@ -18,8 +19,8 @@ from utils import td, trust
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
-schedule_host = os.getenv("SCHEDULE_HOST","localhost")
-schedule_port = os.getenv("SCHEDULE_PORT","3333")
+schedule_host = os.getenv("SCHEDULE_HOST", "localhost")
+schedule_port = os.getenv("SCHEDULE_PORT", "3333")
 hostname = os.getenv("HOSTNAME")
 port = os.getenv("PORT")
 locs_from = [
@@ -118,11 +119,12 @@ class Listener(stomp.ConnectionListener):
 
 if __name__ == "__main__":
     # Flask app with static folder
-    app = Flask(__name__, static_folder="static", static_url_path="")
+    app = Flask(__name__, static_folder="static", static_url_path="/static")
+    CORS(app)  # Enable CORS for all routes
 
     @app.route("/")
     def index():
-        return app.send_static_file("index.html")
+        return send_from_directory("static", "index.html")
 
     @app.route("/trains")
     def get_trains():
@@ -130,7 +132,7 @@ if __name__ == "__main__":
 
     @app.route("/favicon.ico")
     def favicon():
-        return app.send_static_file("favicon.ico")
+        return send_from_directory("static", "favicon.ico")
 
     # Function to run the STOMP listener in a thread
     def run_listener():
