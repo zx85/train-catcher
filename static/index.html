@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Catcher - Live Trains</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .train-count {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #667eea;
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #667eea;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .headcode {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .direction {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #764ba2;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .type {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #374151;
+        }
+
+        .timestamp {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            opacity: 0.6;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .headcode {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚂 Train Catcher</h1>
+            <div class="header-info">
+                <div class="status">
+                    <div class="status-dot"></div>
+                    <span>Live Data</span>
+                </div>
+                <div>
+                    Last updated: <span id="lastUpdate">--:--:--</span>
+                </div>
+                <div class="train-count">
+                    <span id="trainCount">0</span> trains approaching
+                </div>
+            </div>
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div class="table-wrapper">
+            <table id="trainsTable">
+                <thead>
+                    <tr>
+                        <th>Headcode</th>
+                        <th>Location</th>
+                        <th>Direction</th>
+                        <th>Type</th>
+                        <th>Origin</th>
+                        <th>Destination</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="trainsBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #999;">
+                            Loading train data...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">🚂</div>
+            <p>No trains approaching at the moment</p>
+            <p style="font-size: 12px; color: #ccc;">Data refreshes every 5 seconds</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://192.168.75.4:3300/trains';
+        const REFRESH_INTERVAL = 5000; // 5 seconds
+
+        async function fetchTrains() {
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                updateTable(data);
+                updateTimestamp();
+                hideError();
+            } catch (error) {
+                console.error('Error fetching trains:', error);
+                showError(`Failed to fetch train data: ${error.message}`);
+            }
+        }
+
+        function updateTable(trains) {
+            const tbody = document.getElementById('trainsBody');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('trainsTable');
+            const trainCount = document.getElementById('trainCount');
+
+            const trainArray = Object.entries(trains).map(([headcode, data]) => ({
+                headcode,
+                ...data
+            }));
+
+            trainCount.textContent = trainArray.length;
+
+            if (trainArray.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = trainArray.map(train => `
+                <tr>
+                    <td class="headcode">${escapeHtml(train.headcode)}</td>
+                    <td>${escapeHtml(train.location || '-')}</td>
+                    <td><div class="direction">${escapeHtml(train.direction || '?')}</div></td>
+                    <td><span class="type">${escapeHtml(train.type || '-')}</span></td>
+                    <td>${escapeHtml(train.origin || '-')}</td>
+                    <td>${escapeHtml(train.destination || '-')}</td>
+                    <td class="timestamp">${formatTime(train.timestamp)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateTimestamp() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+
+        function formatTime(timestamp) {
+            if (!timestamp) return '-';
+            try {
+                return new Date(timestamp).toLocaleTimeString();
+            } catch {
+                return timestamp;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Initial load
+        fetchTrains();
+
+        // Set up auto-refresh
+        setInterval(fetchTrains, REFRESH_INTERVAL);
+    </script>
+</body>
+</html>
