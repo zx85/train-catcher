@@ -66,6 +66,23 @@
             gap: 20px;
         }
 
+        .update-info {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .update-time {
+            display: flex;
+            margin-left: auto;
+            gap: 10px;
+            font-size: 14px;
+            color: #AAA;
+        }
+
         .status {
             display: flex;
             align-items: center;
@@ -94,6 +111,7 @@
         }
 
         .train-count {
+            align-content: right;
             background: #667eea;
             color: white;
             padding: 10px 20px;
@@ -525,11 +543,13 @@
                     <div class="status-dot"></div>
                     <span>Live Data</span>
                 </div>
-                <div>
-                    Last updated: <span id="lastUpdate">--:--:--</span>
-                </div>
                 <div class="train-count">
                     <span id="trainCount">0 trains</span> approaching
+                </div>
+            </div>
+            <div class="update-info">
+                <div class="update-time">
+                    Last updated: <span id="lastUpdate">--:--:--</span>
                 </div>
             </div>
         </div>
