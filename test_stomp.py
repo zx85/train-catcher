@@ -9,7 +9,7 @@ import json
 from time import sleep
 
 # Internal
-from utils import td, trust
+from utils import td
 
 # External
 import stomp
@@ -17,6 +17,7 @@ import stomp
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
+td_topic = f"/topic/{os.getenv('TD_TOPIC')}"
 hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
 port = os.getenv("PORT", 61618)
 
@@ -56,20 +57,28 @@ class Listener(stomp.ConnectionListener):
                     td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
                     td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
                     headcode = td_entry.get("description")
-                    # If the td_from is in locs_from, the train is coming
-                    if td_to in locs_from_dict or headcode in headcodes:
+                    if (
+                        td_to not in locs_from_dict
+                        and td_to not in locs_to_dict
+                        and td_from not in locs_from_dict
+                        and td_from not in locs_to_dict
+                        and headcode not in headcodes
+                    ):
+                        continue
+                    # If the td_to is in locs_from, the train is coming
+                    if td_to in locs_from_dict:
                         direction = locs_from_dict[td_to]
-                        print(f"Train coming from {td_from}, direction: {direction}")
-                        print(
-                            "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
-                                td_entry.get("timestamp"),
-                                td_entry.get("type"),
-                                td_entry.get("area_id"),
-                                td_entry.get("description"),
-                                td_entry.get("from"),
-                                td_entry.get("to"),
-                            )
+                        print(f"Train approaching {td_to}, direction: {direction}")
+                    print(
+                        "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
+                            td_entry.get("timestamp"),
+                            td_entry.get("type"),
+                            td_entry.get("area_id"),
+                            td_entry.get("description"),
+                            td_entry.get("from"),
+                            td_entry.get("to"),
                         )
+                    )
 
     def on_error(self, frame):
         print("received an error {}".format(frame.body))
@@ -96,7 +105,6 @@ if __name__ == "__main__":
     }
 
     td_connection.connect(**td_connect_headers)
-    td_topic = "/topic/TD_ANG_SIG_AREA"
 
     # Subscription
     td_subscribe_headers = {

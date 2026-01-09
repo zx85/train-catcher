@@ -19,6 +19,7 @@ from utils import td
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
+td_topic = f"/topic/{os.getenv('TD_TOPIC')}"
 schedule_host = os.getenv("SCHEDULE_HOST", None)
 schedule_port = os.getenv("SCHEDULE_PORT", None)
 hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
@@ -30,7 +31,7 @@ locs_from = [
 locs_to = [
     (loc.split(":")[1], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
 ]
-tiploc_code = os.getenv("TIPLOC_CODE")
+tiploc_code = os.getenv("TIPLOC_CODE", "")
 
 # Create dictionaries for faster lookup
 locs_from_dict = {loc: dir for loc, dir in locs_from}
@@ -156,7 +157,6 @@ if __name__ == "__main__":
             "client-id": feed_username,
         }
         td_connection.connect(**td_connect_headers)
-        td_topic = "/topic/TD_ANG_SIG_AREA"
 
         # Subscription
         td_subscribe_headers = {
