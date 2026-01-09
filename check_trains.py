@@ -16,6 +16,13 @@ from flask_cors import CORS
 # Internal
 from utils import td
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__) 
+
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
@@ -49,12 +56,12 @@ class Listener(stomp.ConnectionListener):
         self.is_durable = durable
 
     def get_service(self, headcode):
-        print(f"checking services for {headcode} passing {tiploc_code}")
+        logger.info(f"checking services for {headcode} passing {tiploc_code}")
         service_details = {}
         if services := requests.get(
             f"http://{schedule_host}:{schedule_port}/schedules/headcode/{headcode}"
         ).json():
-            print(f"Found {len(services)} services for {headcode}")
+            logger.info(f"Found {len(services)} services for {headcode}")
             for service in services:
                 for location in service.get("schedule_location"):
                     if location.get("tiploc_code") == tiploc_code:
@@ -71,7 +78,7 @@ class Listener(stomp.ConnectionListener):
 
     def on_message(self, frame):
         headers, message_raw = frame.headers, frame.body
-        # print(json.dumps(headers, indent=2))
+        logger.debug(json.dumps(headers, indent=2))
         parsed_body = json.loads(message_raw)
 
         if self.is_durable:
@@ -86,11 +93,12 @@ class Listener(stomp.ConnectionListener):
                     td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
                     td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
                     timestamp = td_entry.get("timestamp")
+                    logger.debug(f'{headcode}: {td_from}->{td_to} @ {timestamp}')
 
                     # If the td_from is in locs_from, the train is coming
                     if td_to in locs_from_dict:
                         direction = locs_from_dict[td_to]
-                        print(f"Train coming from {td_from}, direction: {direction}")
+                        logger.info(f"Train coming from {td_from}, direction: {direction}")
                         # only get the service data if there's a shedule host set
                         service = self.get_service(headcode) if schedule_host else {}
                         approaching_trains[headcode] = {
@@ -100,22 +108,22 @@ class Listener(stomp.ConnectionListener):
                             "timestamp": timestamp,
                             **service,
                         }
-                        print(json.dumps(approaching_trains[headcode], indent=2))
+                        logger.debug(json.dumps(approaching_trains[headcode], indent=2))
                     # If the td_from is in locs_to, the train has left
                     elif td_from in locs_to_dict:
                         if headcode in approaching_trains:
                             del approaching_trains[headcode]
                         direction = locs_to_dict[td_from]
-                        print(f"Train has left {td_from}, direction: {direction}")
+                        logger.info(f"Train has left {td_from}, direction: {direction}")
 
         # else:
-        #     print("Unknown destination: ", headers["destination"])
+        #     logger.warning("Unknown destination: ", headers["destination"])
 
     def on_error(self, frame):
-        print("received an error {}".format(frame.body))
+        logger.error("received an error {}".format(frame.body))
 
     def on_disconnected(self):
-        print("disconnected")
+        logger.info("disconnected")
 
 
 if __name__ == "__main__":
@@ -124,8 +132,6 @@ if __name__ == "__main__":
     CORS(app)  # Enable CORS for all routes
 
     # Disable Flask request logging
-    import logging
-
     log = logging.getLogger("werkzeug")
     log.setLevel(logging.WARNING)
 
@@ -143,6 +149,7 @@ if __name__ == "__main__":
 
     # Function to run the STOMP listener in a thread
     def run_listener():
+        logger.info("Connecting to Stomp...")
         td_connection = stomp.Connection(
             [(hostname, port)],
             keepalive=True,
@@ -166,7 +173,7 @@ if __name__ == "__main__":
             "ack": "client-individual",
         }
         td_connection.subscribe(**td_subscribe_headers)
-        print("Subscribed to TD topic")
+        logger.info("Subscribed to TD topic")
         while td_connection.is_connected():
             sleep(1)
 
@@ -175,8 +182,8 @@ if __name__ == "__main__":
     listener_thread.start()
 
     # Run the Flask app (can be interrupted with CTRL-C)
-    print("Starting Flask server at http://0.0.0.0:3300")
+    logger.info("Starting Flask server at http://0.0.0.0:3300")
     try:
         app.run(host="0.0.0.0", port=3300, debug=False, use_reloader=False)
     except KeyboardInterrupt:
-        print("\nShutting down gracefully...")
+        logger.info("\nShutting down gracefully...")
