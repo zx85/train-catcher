@@ -55,8 +55,9 @@ class Listener(stomp.ConnectionListener):
                 for td_entry in td_data:
                     td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
                     td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
+                    headcode = td_entry.get("description")
                     # If the td_from is in locs_from, the train is coming
-                    if td_to in locs_from_dict:
+                    if td_to in locs_from_dict or headcode in headcodes:
                         direction = locs_from_dict[td_to]
                         print(f"Train coming from {td_from}, direction: {direction}")
                         print(
