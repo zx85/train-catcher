@@ -1,5 +1,5 @@
-Databases
-data/trains.db
+# Databases
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
