@@ -19,10 +19,10 @@ from utils import td, trust
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
-schedule_host = os.getenv("SCHEDULE_HOST", "localhost")
-schedule_port = os.getenv("SCHEDULE_PORT", "3333")
-hostname = os.getenv("HOST")
-port = os.getenv("PORT")
+schedule_host = os.getenv("SCHEDULE_HOST", None)
+schedule_port = os.getenv("SCHEDULE_PORT", None)
+hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
+port = os.getenv("PORT", 61618)
 
 locs_from = [
     (loc.split(":")[0], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
@@ -31,7 +31,6 @@ locs_to = [
     (loc.split(":")[1], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
 ]
 tiploc_code = os.getenv("TIPLOC_CODE")
-headcodes = [headcode for headcode in os.getenv("HEADCODES", "").split(",")]
 
 # Create dictionaries for faster lookup
 locs_from_dict = {loc: dir for loc, dir in locs_from}
@@ -91,16 +90,16 @@ class Listener(stomp.ConnectionListener):
                     if td_to in locs_from_dict:
                         direction = locs_from_dict[td_to]
                         print(f"Train coming from {td_from}, direction: {direction}")
-                        if len(headcode) == 4:
-                            service = self.get_service(headcode)
-                            approaching_trains[headcode] = {
-                                "direction": direction,
-                                "location": td_from,
-                                "headcode": headcode,
-                                "timestamp": timestamp,
-                                **service,
-                            }
-                            print(json.dumps(approaching_trains[headcode], indent=2))
+                        # only get the service data if there's a shedule host set
+                        service = self.get_service(headcode) if schedule_host else {}
+                        approaching_trains[headcode] = {
+                            "direction": direction,
+                            "location": td_from,
+                            "headcode": headcode,
+                            "timestamp": timestamp,
+                            **service,
+                        }
+                        print(json.dumps(approaching_trains[headcode], indent=2))
                     # If the td_from is in locs_to, the train has left
                     elif td_from in locs_to_dict:
                         if headcode in approaching_trains:

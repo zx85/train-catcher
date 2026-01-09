@@ -395,6 +395,19 @@
             border-bottom: none;
         }
 
+        .no-service-data {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-style: italic;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .no-service-data {
+                color: #888;
+            }
+        }
+
         /* Mobile responsiveness */
         @media (max-width: 768px) {
             .header {
@@ -547,24 +560,29 @@
         </div>
 
         <div class="empty-state" id="emptyState" style="display: none;">
-            <div class="empty-state-icon">🚂</div>
-            <p>No trains approaching at the moment</p>
-            <p style="font-size: 12px; color: #ccc;">Data refreshes every 5 seconds</p>
-        </div>
-    </div>
-
-    <!-- Modal for train details -->
-    <div id="detailsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalHeadcode">Train Details</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div id="serviceDetailsSection">
+                <table class="details-table">
+                    <tr>
+                        <td>Type:</td>
+                        <td id="modalType">-</td>
+                    </tr>
+                    <tr>
+                        <td>ATOC:</td>
+                        <td id="modalAtoc">-</td>
+                    </tr>
+                    <tr>
+                        <td>Power:</td>
+                        <td id="modalPower">-</td>
+                    </tr>
+                    <tr>
+                        <td>Speed:</td>
+                        <td id="modalSpeed">-</td>
+                    </tr>
+                </table>
             </div>
-            <table class="details-table">
-                <tr>
-                    <td>Type:</td>
-                    <td id="modalType">-</td>
-                </tr>
+            <div id="noServiceDataSection" class="no-service-data" style="display: none;">
+                No service data available for this train
+            </divr>
                 <tr>
                     <td>ATOC:</td>
                     <td id="modalAtoc">-</td>
@@ -642,11 +660,19 @@
             const train = currentTrainData[headcode];
             if (!train) return;
 
+            // Check if service data exists
+            const hasServiceData = train.type || train.atoc || train.power || train.speed;
+            
             document.getElementById('modalHeadcode').textContent = `Train ${headcode} - Details`;
-            document.getElementById('modalType').textContent = escapeHtml(train.type || '-');
-            document.getElementById('modalAtoc').textContent = escapeHtml(train.atoc || '-');
-            document.getElementById('modalPower').textContent = escapeHtml(train.power || '-');
-            document.getElementById('modalSpeed').textContent = escapeHtml(train.speed || '-');
+            document.getElementById('serviceDetailsSection').style.display = hasServiceData ? 'block' : 'none';
+            document.getElementById('noServiceDataSection').style.display = hasServiceData ? 'none' : 'block';
+            
+            if (hasServiceData) {
+                document.getElementById('modalType').textContent = escapeHtml(train.type || '-');
+                document.getElementById('modalAtoc').textContent = escapeHtml(train.atoc || '-');
+                document.getElementById('modalPower').textContent = escapeHtml(train.power || '-');
+                document.getElementById('modalSpeed').textContent = escapeHtml(train.speed || '-');
+            }
 
             document.getElementById('detailsModal').classList.add('show');
         }

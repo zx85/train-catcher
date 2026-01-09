@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+
+import os
+from dotenv import load_dotenv
+import json
+
+
+# Standard
+from time import sleep
+
+# Internal
+from utils import td, trust
+
+# External
+import stomp
+
+load_dotenv()
+feed_username = os.getenv("FEED_USERNAME")
+feed_password = os.getenv("FEED_PASSWORD")
+hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
+port = os.getenv("PORT", 61618)
+
+locs_from = [
+    (loc.split(":")[0], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
+]
+locs_to = [
+    (loc.split(":")[1], loc.split(":")[2]) for loc in os.getenv("LOCS").split(",")
+]
+tiploc_code = os.getenv("TIPLOC_CODE")
+headcodes = [headcode for headcode in os.getenv("HEADCODES", "").split(",")]
+
+# Create dictionaries for faster lookup
+locs_from_dict = {loc: dir for loc, dir in locs_from}
+locs_to_dict = {loc: dir for loc, dir in locs_to}
+
+
+class Listener(stomp.ConnectionListener):
+    _mq: stomp.Connection
+
+    def __init__(self, mq: stomp.Connection, durable=False):
+        self._mq = mq
+        self.is_durable = durable
+
+    def on_message(self, frame):
+        headers, message_raw = frame.headers, frame.body
+        # print(json.dumps(headers, indent=2))
+        parsed_body = json.loads(message_raw)
+
+        if self.is_durable:
+            # Acknowledging messages is important in client-individual mode
+            self._mq.ack(id=headers["message-id"], subscription=headers["subscription"])
+
+        if "TD_" in headers["destination"]:
+            if td_data := td.parse_td_frame(parsed_body):
+                for td_entry in td_data:
+                    td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
+                    td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
+                    # If the td_from is in locs_from, the train is coming
+                    if td_to in locs_from_dict:
+                        direction = locs_from_dict[td_to]
+                        print(f"Train coming from {td_from}, direction: {direction}")
+                        print(
+                            "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
+                                td_entry.get("timestamp"),
+                                td_entry.get("type"),
+                                td_entry.get("area_id"),
+                                td_entry.get("description"),
+                                td_entry.get("from"),
+                                td_entry.get("to"),
+                            )
+                        )
+
+    def on_error(self, frame):
+        print("received an error {}".format(frame.body))
+
+    def on_disconnected(self):
+        print("disconnected")
+
+
+if __name__ == "__main__":
+    # https://stomp.github.io/stomp-specification-1.2.html#Heart-beating
+    # We're committing to sending and accepting heartbeats every 5000ms
+    td_connection = stomp.Connection(
+        [(hostname, port)],
+        keepalive=True,
+        heartbeats=(5000, 5000),
+    )
+    trust_connection = stomp.Connection(
+        [(hostname, port)],
+        keepalive=True,
+        heartbeats=(5000, 5000),
+    )
+    td_connection.set_listener("", Listener(td_connection, durable=True))
+    trust_connection.set_listener("", Listener(trust_connection))
+    # Connect to feed
+    td_connect_headers = {
+        "username": feed_username,
+        "passcode": feed_password,
+        "wait": True,
+        "client-id": feed_username,
+    }
+    trust_connect_headers = {
+        "username": feed_username,
+        "passcode": feed_password,
+        "wait": True,
+    }
+
+    td_connection.connect(**td_connect_headers)
+    trust_connection.connect(**trust_connect_headers)
+    # Determine topic to subscribe
+    # topic = None
+    # if args.trust:
+    #     topic = "/topic/TRAIN_MVT_ALL_TOC"
+    # elif args.td:
+    td_topic = "/topic/TD_ANG_SIG_AREA"
+    trust_topic = "/topic/TRAIN_MVT_ALL_TOC"
+
+    # Subscription
+    td_subscribe_headers = {
+        "destination": td_topic,
+        "id": 1,
+        "activemq.subscriptionName": feed_username + td_topic,
+        "ack": "client-individual",
+    }
+    trust_subscribe_headers = {"destination": trust_topic, "id": 2}
+    td_connection.subscribe(**td_subscribe_headers)
+    print("Subscribed to TD topic")
+    trust_connection.subscribe(**trust_subscribe_headers)
+    print("Subscribed to TRUST topic")
+    while td_connection.is_connected() or trust_connection.is_connected():
+        sleep(1)
