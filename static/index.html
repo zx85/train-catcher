@@ -529,7 +529,7 @@
                     Last updated: <span id="lastUpdate">--:--:--</span>
                 </div>
                 <div class="train-count">
-                    <span id="trainCount">0</span> trains approaching
+                    <span id="trainCount">0 trains</span> approaching
                 </div>
             </div>
         </div>
@@ -632,7 +632,7 @@
                 ...data
             }));
 
-            trainCount.textContent = trainArray.length;
+            trainCount.textContent = `${trainArray.length} ${trainArray.length === 1 ? 'train' : 'trains'}`;;
 
             if (trainArray.length === 0) {
                 table.style.display = 'none';
