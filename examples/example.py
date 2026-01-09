@@ -11,7 +11,7 @@ from time import sleep
 import stomp
 
 # Internal
-from utils import td, trust
+from includes import td, trust
 
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")

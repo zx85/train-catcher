@@ -11,7 +11,7 @@ RUN apk update && apk upgrade
 COPY pyproject.toml uv.lock ./
 COPY uv.lock ./
 COPY check_trains.py ./
-COPY utils/ ./utils/
+COPY includes/ ./includes/
 COPY static/ ./static/
 COPY .env ./.env
 
