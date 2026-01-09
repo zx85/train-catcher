@@ -147,6 +147,14 @@ if __name__ == "__main__":
     def favicon():
         return send_from_directory("static", "favicon.ico")
 
+    @app.route("/style.css")
+    def style_css():
+        return send_from_directory("static", "style.css")
+
+    @app.route("/trains.js")
+    def trains_js():
+        return send_from_directory("static", "trains.js")
+
     # Function to run the STOMP listener in a thread
     def run_listener():
         logger.info("Connecting to Stomp...")
