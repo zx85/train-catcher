@@ -12,6 +12,7 @@ from flask_cors import CORS
 # Internal
 from includes.train_manager import train_manager
 from includes.listener import run_listener
+from includes import database
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -36,6 +37,11 @@ def index():
 @app.route("/trains")
 def get_trains():
     return train_manager.get_snapshot()
+
+
+@app.route("/history")
+def get_history():
+    return {"history": database.get_history()}
 
 
 @app.route("/favicon.ico")

@@ -3,8 +3,8 @@ import json
 import logging
 import requests
 from datetime import datetime
-import includes.config as config
-import includes.database as database
+import config
+import database
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ class TrainManager:
         td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
         td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
         direction = config.LOCS_FROM_DICT.get(td_to)
-        logger.info(f"{headcode} approaching {td_from}, direction: {direction}")
+        logger.info(f"Train coming from {td_from}, direction: {direction}")
 
         # only get the service data if there's a schedule host set
         service = self._get_service(headcode) if config.SCHEDULE_HOST else {}
@@ -53,7 +53,7 @@ class TrainManager:
                 train_details = self.trains_data["trains"][headcode]
                 del self.trains_data["trains"][headcode]
                 logger.info(
-                    f"{headcode} departing {td_from}, direction: {config.LOCS_TO_DICT.get(td_from)}"
+                    f"Train has left {td_from}, direction: {config.LOCS_TO_DICT.get(td_from)}"
                 )
                 database.log_movement(
                     headcode,

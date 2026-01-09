@@ -96,11 +96,23 @@ function closeModal() {
     document.getElementById('detailsModal').classList.remove('show');
 }
 
+function showHistory() {
+    document.getElementById('historyModal').classList.add('show');
+}
+
+function closeHistoryModal() {
+    document.getElementById('historyModal').classList.remove('show');
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
-    const modal = document.getElementById('detailsModal');
-    if (event.target === modal) {
+    const detailsModal = document.getElementById('detailsModal');
+    const historyModal = document.getElementById('historyModal');
+    if (event.target === detailsModal) {
         closeModal();
+    }
+    if (event.target === historyModal) {
+        closeHistoryModal();
     }
 }
 
@@ -134,8 +146,31 @@ function hideError() {
     document.getElementById('error').style.display = 'none';
 }
 
+function updateHistory() {
+    fetch('/history')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('#history-table tbody');
+            tbody.innerHTML = ''; // Clear existing rows
+            
+            data.history.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.timestamp}</td>
+                    <td>${row.headcode}</td>
+                    <td>${row.location}</td>
+                    <td>${row.direction || '-'}</td>
+                    <td>${row.event}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+}
+
 // Initial load
 fetchTrains();
+updateHistory();
 
 // Set up auto-refresh
 setInterval(fetchTrains, REFRESH_INTERVAL);
+setInterval(updateHistory, REFRESH_INTERVAL);

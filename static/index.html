@@ -16,6 +16,7 @@
                     <div class="status-dot"></div>
                     <span id="signalmaps-url" class="signalmaps-link"><A HREF="https://signalmaps.co.uk" TARGET="_BLANK">Live Data</A></span>
                 </div>
+                <button class="history-btn" onclick="showHistory()">History</button>
                 <div class="train-count">
                     <span id="trainCount">0 trains</span> approaching
                 </div>
@@ -88,6 +89,32 @@
             </div>
             <div id="noServiceDataSection" class="no-service-data" style="display: none;">
                 No service data available for this train
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for History -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Recent Movements</h2>
+                <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+            </div>
+            <div class="table-wrapper" style="box-shadow: none;">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Headcode</th>
+                            <th>Location</th>
+                            <th>Direction</th>
+                            <th>Event</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be inserted here by JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

@@ -6,6 +6,8 @@ services:
       - "3300:3300"
     environment:
       - FLASK_ENV=production
+      - DB_PATH=/app/data/trains.db
     volumes:
-      - ./.env:/.env:ro
+      - ./.env:/app/.env:ro
+      - ./data:/app/data
     restart: unless-stopped

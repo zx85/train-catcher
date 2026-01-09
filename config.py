@@ -12,7 +12,7 @@ SCHEDULE_PORT = os.getenv("SCHEDULE_PORT", None)
 HOSTNAME = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
 PORT = int(os.getenv("PORT", 61618))
 TIPLOC_CODE = os.getenv("TIPLOC_CODE", "")
-DB_PATH = os.getenv("DB_PATH", os.path.join("data", "trains.db"))
+DB_PATH = os.getenv("DB_PATH", "trains.db")
 
 locs_raw = os.getenv("LOCS", "").split(",")
 LOCS_FROM = [(loc.split(":")[0], loc.split(":")[2]) for loc in locs_raw if loc]
