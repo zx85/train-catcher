@@ -70,11 +70,11 @@ class Listener(stomp.ConnectionListener):
                         direction = locs_from_dict[td_to]
                         print(f"Train approaching {td_to}, direction: {direction}")
                     print(
-                        "{} [{:2}] {:2} {:4} {:>5}->{:5}".format(
+                        "{} [{:2}] headcode: {:4} | location: {:2} {:>5}->{:5}".format(
                             td_entry.get("timestamp"),
                             td_entry.get("type"),
-                            td_entry.get("area_id"),
                             td_entry.get("description"),
+                            td_entry.get("area_id"),
                             td_entry.get("from"),
                             td_entry.get("to"),
                         )
