@@ -49,7 +49,7 @@ class Listener(stomp.ConnectionListener):
         self.is_durable = durable
 
     def get_service(self, headcode):
-        print(f"checking services for {headcode}")
+        print(f"checking services for {headcode} passing {tiploc_code}")
         service_details = {}
         if services := requests.get(
             f"http://{schedule_host}:{schedule_port}/schedules/headcode/{headcode}"
@@ -67,7 +67,7 @@ class Listener(stomp.ConnectionListener):
                             "origin": service.get("origin"),
                             "destination": service.get("destination"),
                         }
-                        return service_details
+        return service_details
 
     def on_message(self, frame):
         headers, message_raw = frame.headers, frame.body
