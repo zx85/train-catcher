@@ -103,6 +103,26 @@ body {
     50% { opacity: 0.5; }
 }
 
+/* Targeting the link inside the specific ID */
+#signalmaps-url a {
+    color: #667eea;      /* A vibrant light blue */
+    text-decoration: none;   /* Removes the default underline */
+    font-weight: bold;       /* Makes it pop against the blue background */
+}
+
+/* Adding a hover effect for better user experience */
+#signalmaps-url a:hover {
+    color: #ffffff;          /* Turns white when hovered */
+    text-decoration: underline;
+}
+
+@media (prefers-color-scheme: dark) {
+    #signalmaps-url a {
+        color: #a0a0ff;
+    }
+}
+
+
 .train-count {
     align-content: right;
     background: #667eea;

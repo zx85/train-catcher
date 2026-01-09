@@ -1,4 +1,4 @@
-const API_URL = '/trains';  // Use relative URL to the same server
+const API_URL = '/trains';  // current trains live data
 const REFRESH_INTERVAL = 5000; // 5 seconds
 
 let currentTrainData = {};
@@ -9,8 +9,9 @@ async function fetchTrains() {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
-        currentTrainData = data;
-        updateTable(data);
+        currentTrainData = data['trains'];
+        signalmaps_url = data['metadata']['signalmaps_url']
+        updateTable(currentTrainData);
         updateTimestamp();
         hideError();
     } catch (error) {
@@ -32,7 +33,7 @@ function updateTable(trains) {
 
     const trainCountContainer = document.querySelector('.train-count');
     trainCount.textContent = `${trainArray.length} ${trainArray.length === 1 ? 'train' : 'trains'}`;;
-
+    
     if (trainArray.length === 0) {
         table.style.display = 'none';
         trainCountContainer.style.display = 'none';
@@ -42,6 +43,11 @@ function updateTable(trains) {
     trainCountContainer.style.display = 'block';
     table.style.display = 'table';
     emptyState.style.display = 'none';
+
+    const link = document.querySelector('#signalmaps-url a');
+    if (link) {
+        link.href = signalmaps_url || 'https://signalmaps.co.uk';
+    }
 
     tbody.innerHTML = trainArray.map(train => `
         <tr>

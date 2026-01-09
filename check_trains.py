@@ -27,6 +27,7 @@ load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
 td_topic = f"/topic/{os.getenv('TD_TOPIC', 'TD_ALL_SIG_AREA')}"
+signalmaps_url = f"https://signalmaps.co.uk/#{os.getenv('SIGNALMAPS_LOC','')}"
 schedule_host = os.getenv("SCHEDULE_HOST", None)
 schedule_port = os.getenv("SCHEDULE_PORT", None)
 hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
@@ -45,7 +46,13 @@ locs_from_dict = {loc: dir for loc, dir in locs_from}
 locs_to_dict = {loc: dir for loc, dir in locs_to}
 
 # Global dictionary to store current state of approaching trains
-approaching_trains = {}  # headcode: {'direction': dir, 'location': td_from, 'timestamp': ...}
+trains_data = {
+    'metadata':
+      {'signalmaps_url': signalmaps_url
+      },
+    'trains':
+      {}
+}  
 
 
 class Listener(stomp.ConnectionListener):
@@ -101,18 +108,18 @@ class Listener(stomp.ConnectionListener):
                         logger.info(f"Train coming from {td_from}, direction: {direction}")
                         # only get the service data if there's a shedule host set
                         service = self.get_service(headcode) if schedule_host else {}
-                        approaching_trains[headcode] = {
+                        trains_data['trains'][headcode] = {
                             "direction": direction,
                             "location": td_from,
                             "headcode": headcode,
                             "timestamp": timestamp,
                             **service,
                         }
-                        logger.debug(json.dumps(approaching_trains[headcode], indent=2))
+                        logger.debug(json.dumps(trains_data['trains'][headcode], indent=2))
                     # If the td_from is in locs_to, the train has left
                     elif td_from in locs_to_dict:
-                        if headcode in approaching_trains:
-                            del approaching_trains[headcode]
+                        if headcode in trains_data['trains']:
+                            del trains_data['trains'][headcode]
                         direction = locs_to_dict[td_from]
                         logger.info(f"Train has left {td_from}, direction: {direction}")
 
@@ -141,7 +148,7 @@ if __name__ == "__main__":
 
     @app.route("/trains")
     def get_trains():
-        return approaching_trains
+        return trains_data
 
     @app.route("/favicon.ico")
     def favicon():
