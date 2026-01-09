@@ -17,7 +17,7 @@ import stomp
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
-td_topic = f"/topic/{os.getenv('TD_TOPIC')}"
+td_topic = f"/topic/{os.getenv('TD_TOPIC', 'TD_ALL_SIG_AREA')}"
 hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
 port = os.getenv("PORT", 61618)
 

@@ -19,7 +19,7 @@ from utils import td
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
 feed_password = os.getenv("FEED_PASSWORD")
-td_topic = f"/topic/{os.getenv('TD_TOPIC')}"
+td_topic = f"/topic/{os.getenv('TD_TOPIC', 'TD_ALL_SIG_AREA')}"
 schedule_host = os.getenv("SCHEDULE_HOST", None)
 schedule_port = os.getenv("SCHEDULE_PORT", None)
 hostname = os.getenv("HOST", "publicdatafeeds.networkrail.co.uk")
