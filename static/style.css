@@ -143,9 +143,10 @@ body {
     align-content: right;
     background: #667eea;
     color: white;
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 20px;
     font-weight: bold;
+    transition: background 0.2s;
 }
 
 .table-wrapper {
