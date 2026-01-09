@@ -21,7 +21,7 @@ class TrainManager:
         td_from = f"{td_entry.get('area_id')}{td_entry.get('from')}"
         td_to = f"{td_entry.get('area_id')}{td_entry.get('to')}"
         direction = config.LOCS_FROM_DICT.get(td_to)
-        logger.info(f"Train coming from {td_from}, direction: {direction}")
+        logger.info(f"{headcode} approaching {td_from}, direction: {direction}")
 
         # only get the service data if there's a schedule host set
         service = self._get_service(headcode) if config.SCHEDULE_HOST else {}
@@ -43,7 +43,7 @@ class TrainManager:
             if headcode in self.trains_data["trains"]:
                 del self.trains_data["trains"][headcode]
                 logger.info(
-                    f"Train has left {td_from}, direction: {config.LOCS_TO_DICT.get(td_from)}"
+                    f"{headcode} departing {td_from}, direction: {config.LOCS_TO_DICT.get(td_from)}"
                 )
 
     def _get_service(self, headcode):
