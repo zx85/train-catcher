@@ -14,7 +14,7 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 
 # Internal
-from utils import td, trust
+from utils import td
 
 load_dotenv()
 feed_username = os.getenv("FEED_USERNAME")
@@ -147,13 +147,7 @@ if __name__ == "__main__":
             keepalive=True,
             heartbeats=(5000, 5000),
         )
-        trust_connection = stomp.Connection(
-            [(hostname, port)],
-            keepalive=True,
-            heartbeats=(5000, 5000),
-        )
         td_connection.set_listener("", Listener(td_connection, durable=True))
-        trust_connection.set_listener("", Listener(trust_connection))
         # Connect to feed
         td_connect_headers = {
             "username": feed_username,
@@ -161,16 +155,8 @@ if __name__ == "__main__":
             "wait": True,
             "client-id": feed_username,
         }
-        trust_connect_headers = {
-            "username": feed_username,
-            "passcode": feed_password,
-            "wait": True,
-        }
-
         td_connection.connect(**td_connect_headers)
-        trust_connection.connect(**trust_connect_headers)
         td_topic = "/topic/TD_ANG_SIG_AREA"
-        trust_topic = "/topic/TRAIN_MVT_ALL_TOC"
 
         # Subscription
         td_subscribe_headers = {
@@ -179,12 +165,9 @@ if __name__ == "__main__":
             "activemq.subscriptionName": feed_username + td_topic,
             "ack": "client-individual",
         }
-        trust_subscribe_headers = {"destination": trust_topic, "id": 2}
         td_connection.subscribe(**td_subscribe_headers)
         print("Subscribed to TD topic")
-        trust_connection.subscribe(**trust_subscribe_headers)
-        print("Subscribed to TRUST topic")
-        while td_connection.is_connected() or trust_connection.is_connected():
+        while td_connection.is_connected():
             sleep(1)
 
     # Start the listener in a separate daemon thread
