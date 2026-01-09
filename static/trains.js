@@ -30,14 +30,16 @@ function updateTable(trains) {
         ...data
     }));
 
+    const trainCountContainer = document.querySelector('.train-count');
     trainCount.textContent = `${trainArray.length} ${trainArray.length === 1 ? 'train' : 'trains'}`;;
 
     if (trainArray.length === 0) {
         table.style.display = 'none';
+        trainCountContainer.style.display = 'none';
         emptyState.style.display = 'block';
         return;
     }
-
+    trainCountContainer.style.display = 'block';
     table.style.display = 'table';
     emptyState.style.display = 'none';
 
