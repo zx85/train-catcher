@@ -560,6 +560,19 @@
         </div>
 
         <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">🚂</div>
+            <p>No trains approaching at the moment</p>
+            <p style="font-size: 12px; color: #ccc;">Data refreshes every 5 seconds</p>
+        </div>
+    </div>
+
+    <!-- Modal for train details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalHeadcode">Train Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
             <div id="serviceDetailsSection">
                 <table class="details-table">
                     <tr>
@@ -582,20 +595,7 @@
             </div>
             <div id="noServiceDataSection" class="no-service-data" style="display: none;">
                 No service data available for this train
-            </divr>
-                <tr>
-                    <td>ATOC:</td>
-                    <td id="modalAtoc">-</td>
-                </tr>
-                <tr>
-                    <td>Power:</td>
-                    <td id="modalPower">-</td>
-                </tr>
-                <tr>
-                    <td>Speed:</td>
-                    <td id="modalSpeed">-</td>
-                </tr>
-            </table>
+            </div>
         </div>
     </div>
 
