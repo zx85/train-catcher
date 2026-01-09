@@ -122,6 +122,12 @@ if __name__ == "__main__":
     app = Flask(__name__, static_folder="static", static_url_path="/static")
     CORS(app)  # Enable CORS for all routes
 
+    # Disable Flask request logging
+    import logging
+
+    log = logging.getLogger("werkzeug")
+    log.setLevel(logging.WARNING)
+
     @app.route("/")
     def index():
         return send_from_directory("static", "index.html")
