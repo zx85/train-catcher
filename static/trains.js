@@ -153,7 +153,7 @@ function updateHistory() {
             const tbody = document.querySelector('#history-table tbody');
             tbody.innerHTML = ''; // Clear existing rows
             
-            data.history.forEach(row => {
+            data.history.slice(0, 15).forEach(row => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${row.timestamp}</td>
