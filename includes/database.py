@@ -55,7 +55,7 @@ def get_history(limit=50):
     try:
         conn = get_connection()
         cursor = conn.execute(
-            "SELECT timestamp, headcode, location, direction, event FROM movements ORDER BY id DESC LIMIT ?",
+            "SELECT timestamp, headcode, location, direction, event FROM movements ORDER BY timestamp DESC LIMIT ?",
             (limit,),
         )
         rows = cursor.fetchall()

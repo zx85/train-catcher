@@ -41,7 +41,7 @@ def get_trains():
 
 @app.route("/history")
 def get_history():
-    return {"history": database.get_history()}
+    return {"history": database.get_history(limit=10)}
 
 
 @app.route("/favicon.ico")
