@@ -50,16 +50,26 @@ def log_movement(headcode, location, direction, event, details):
     except Exception as e:
         logger.error(f"Failed to log movement: {e}")
 
+def _process_history(rows):
+    for row in rows:
+        if row.get('details'):
+            if event=='ARRIVAL' and row.get("details").get("origin"):
+                row['details']=f'ORIGIN: {row.get("details").get("origin")}'
+            elif event=='DEPARTURE' and row.get("details").get("destination"):
+                row['details']=f'DEST: {row.get("details").get("destination")}'
+            else:
+                row['details']=None
 
 def get_history(limit=50):
     try:
         conn = get_connection()
         cursor = conn.execute(
-            "SELECT timestamp, headcode, location, direction, event FROM movements ORDER BY timestamp DESC LIMIT ?",
+            "SELECT timestamp, headcode, location, direction, event,details FROM movements ORDER BY timestamp DESC LIMIT ?",
             (limit,),
         )
-        rows = cursor.fetchall()
+        rows = _process_history(cursor.fetchall())
         conn.close()
+
         return [dict(row) for row in rows]
     except Exception as e:
         logger.error(f"Failed to get history: {e}")
