@@ -159,8 +159,8 @@ function updateHistory() {
                     <td>${row.timestamp}</td>
                     <td>${row.headcode}</td>
                     <td>${row.location}</td>
-                    <td>${row.direction || '-'}</td>
-                    <td>${row.event}</td>
+                    <td>${row.direction || '-'} <span style="font-style: italic;">(${row.event.substring(0, 3)})</span></td>
+                    <td>${row.details}</td>
                 `;
                 tbody.appendChild(tr);
             });

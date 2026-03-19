@@ -51,16 +51,33 @@ def log_movement(headcode, location, direction, event, details):
         logger.error(f"Failed to log movement: {e}")
 
 
+def _process_history(rows):
+    for row in rows:
+        details_str = row.get("details")
+        if details_str:
+            try:
+                if details := json.loads(details_str):
+                    row["details"] = (
+                        f"{details.get('origin')}➡️{details.get('destination')}"
+                    )
+                else:
+                    row["details"] = None
+            except (json.JSONDecodeError, TypeError):
+                row["details"] = None
+    return rows
+
+
 def get_history(limit=50):
     try:
         conn = get_connection()
         cursor = conn.execute(
-            "SELECT timestamp, headcode, location, direction, event FROM movements ORDER BY timestamp DESC LIMIT ?",
+            "SELECT timestamp, headcode, location, direction, event,details FROM movements ORDER BY timestamp DESC LIMIT ?",
             (limit,),
         )
-        rows = cursor.fetchall()
+        rows = _process_history([dict(row) for row in cursor.fetchall()])
         conn.close()
-        return [dict(row) for row in rows]
+
+        return rows
     except Exception as e:
         logger.error(f"Failed to get history: {e}")
         return []

@@ -43,33 +43,44 @@ class Listener(stomp.ConnectionListener):
         logger.error("received an error {}".format(frame.body))
 
     def on_disconnected(self):
-        logger.info("disconnected")
+        logger.warning("STOMP listener disconnected.")
 
 
 def run_listener():
-    logger.info("Connecting to Stomp...")
-    td_connection = stomp.Connection(
-        [(config.HOSTNAME, config.PORT)],
-        keepalive=True,
-        heartbeats=(5000, 5000),
-    )
-    td_connection.set_listener("", Listener(td_connection, train_manager, durable=True))
+    while True:
+        try:
+            logger.info("Connecting to Stomp...")
+            td_connection = stomp.Connection(
+                [(config.HOSTNAME, config.PORT)],
+                keepalive=True,
+                heartbeats=(5000, 5000),
+            )
+            td_connection.set_listener(
+                "", Listener(td_connection, train_manager, durable=True)
+            )
 
-    td_connect_headers = {
-        "username": config.FEED_USERNAME,
-        "passcode": config.FEED_PASSWORD,
-        "wait": True,
-        "client-id": config.FEED_USERNAME,
-    }
-    td_connection.connect(**td_connect_headers)
+            td_connect_headers = {
+                "username": config.FEED_USERNAME,
+                "passcode": config.FEED_PASSWORD,
+                "wait": True,
+                "client-id": config.FEED_USERNAME,
+            }
+            td_connection.connect(**td_connect_headers)
 
-    td_subscribe_headers = {
-        "destination": config.TD_TOPIC,
-        "id": 1,
-        "activemq.subscriptionName": config.FEED_USERNAME + config.TD_TOPIC,
-        "ack": "client-individual",
-    }
-    td_connection.subscribe(**td_subscribe_headers)
-    logger.info("Subscribed to TD topic")
-    while td_connection.is_connected():
-        sleep(1)
+            td_subscribe_headers = {
+                "destination": config.TD_TOPIC,
+                "id": 1,
+                "activemq.subscriptionName": config.FEED_USERNAME + config.TD_TOPIC,
+                "ack": "client-individual",
+            }
+            td_connection.subscribe(**td_subscribe_headers)
+            logger.info("Subscribed to TD topic. Listening for messages.")
+            while td_connection.is_connected():
+                sleep(1)
+        except stomp.exception.ConnectFailedException as e:
+            logger.warning(f"Failed to connect to STOMP: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in listener: {e}", exc_info=True)
+
+        logger.info("Attempting to reconnect in 30 seconds...")
+        sleep(30)
