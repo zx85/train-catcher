@@ -29,8 +29,8 @@ To get meaningful data (like "London Euston to Manchester Piccadilly") instead o
 
 You need to run one of the following services on your network:
 
-1.  **Raspberry Pi / ARM Version** (Recommended for Pi): zx85/uk-rail-schedule-api-raspi
-2.  **Original Version**: andrewl/uk-rail-schedule-api
+1.  **Raspberry Pi / ARM Version** (Recommended for Pi): [zx85/uk-rail-schedule-api-raspi](zx85/uk-rail-schedule-api-raspi)
+2.  **Original Version**: [andrewl/uk-rail-schedule-api](andrewl/uk-rail-schedule-api)
 
 Once set up, configure the `SCHEDULE_HOST` and `SCHEDULE_PORT` in your `.env` file to point to it.
 
