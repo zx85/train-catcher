@@ -48,8 +48,8 @@ Create a `.env` file in the project root. Below are the required and optional va
 ### Monitoring Configuration
 *   `LOCS`: Comma-separated list of monitoring points.
     *   Format: `FROM_BERTH:TO_BERTH:DIRECTION`
-    *   Note: Berths should usually include the Area ID (e.g., `K21234`). Use `test_stomp.py` to discover these IDs.
-*   `TIPLOC_CODE`: The TIPLOC code of your location (used to match the train against the schedule).
+    *   Note: Berths should usually include the Area ID (e.g., `K21234`). Use `test_stomp.py` to discover these IDs, cross-referencing to services on [signalmaps.co.uk](https://www.signalmaps.co.uk).
+*   `TIPLOC_CODE`: The TIPLOC code of a nearby location (used to match the train against the schedule).
 *   `HEADCODES`: (Optional) Comma-separated list of specific headcodes to filter for.
 
 ### Schedule API
