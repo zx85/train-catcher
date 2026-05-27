@@ -69,7 +69,7 @@ class TrainManager:
         try:
             if services := requests.get(
                 f"http://{config.SCHEDULE_HOST}:{config.SCHEDULE_PORT}/schedules/headcode/{headcode}"
-            ).json():
+            ).json().get('schedules',[]):
                 logger.info(f"Found {len(services)} services for {headcode}")
                 for service in services:
                     for location in service.get("schedule_location"):
