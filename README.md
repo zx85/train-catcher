@@ -27,10 +27,11 @@ Optionally, it can query a separate **Schedule API** to fetch detailed informati
 
 To get meaningful data (like "London Euston to Manchester Piccadilly") instead of just a headcode (e.g., "1H05"), this project is designed to work with a local schedule API.
 
-You need to run one of the following services on your network:
+This requires the following service to be running:
 
-1.  **Raspberry Pi / ARM Version** (Recommended for Pi): [zx85/uk-rail-schedule-api-raspi](zx85/uk-rail-schedule-api-raspi)
-2.  **Original Version**: [andrewl/uk-rail-schedule-api](andrewl/uk-rail-schedule-api)
+[andrewl/uk-rail-schedule-api](andrewl/uk-rail-schedule-api)
+
+The latest version of uk-rail-schedule-api now builds the Go app natively as part of Docker, so (in theory) will work on any platform that supports the Go libraries.
 
 Once set up, configure the `SCHEDULE_HOST` and `SCHEDULE_PORT` in your `.env` file to point to it.
 
